@@ -1,0 +1,5 @@
+keycloak:
+  realm: dh-money-users
+  clientId: api-dh-money
+  clientSecret: 2bgKXNvbhtpbEUux2QmNfUev6D5hzqA4
+  serverUrl: http://localhost:8080
