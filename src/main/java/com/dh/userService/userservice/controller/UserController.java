@@ -1,6 +1,7 @@
 package com.dh.userService.userservice.controller;
 
 
+import com.dh.userService.userservice.entities.Login;
 import com.dh.userService.userservice.entities.User;
 import com.dh.userService.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,22 @@ public class UserController {
         return ResponseEntity.ok("User succesfully created");
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Login loginData) throws Exception{
+        String credentials = userService.login(loginData);
+
+        if (credentials != null) {
+            return ResponseEntity.ok(credentials);
+        } else if (userService.findByEmail(loginData.getEmail()).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+
+
+/*
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         Optional<User> userFoundOptional = userService.findUserById(id);
@@ -61,4 +78,6 @@ public class UserController {
         userService.updateUser(user);
         return ResponseEntity.ok(user);
     }
+
+ */
 }

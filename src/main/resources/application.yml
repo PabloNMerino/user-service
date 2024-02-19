@@ -3,3 +3,13 @@ keycloak:
   clientId: api-dh-money
   clientSecret: 2bgKXNvbhtpbEUux2QmNfUev6D5hzqA4
   serverUrl: http://localhost:8080
+  tokenEndpoint: ${keycloak.serverUrl}/realms/${keycloak.realm}/protocol/openid-connect/token
+
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${keycloak.serverUrl}/realms/${keycloak.realm}
+          jwk-set-uri: ${keycloak.serverUrl}/realms/${keycloak.realm}/protocol/openid-connect/certs
