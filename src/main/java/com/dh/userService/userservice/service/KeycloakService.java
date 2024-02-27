@@ -7,15 +7,18 @@ import com.dh.userService.userservice.entities.User;
 import com.dh.userService.userservice.entities.dto.UserKeycloak;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Response;
+import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.admin.client.token.TokenManager;
+import org.keycloak.jose.jwk.JWK;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.naming.AuthenticationException;
 import java.util.ArrayList;
@@ -49,7 +52,7 @@ public class KeycloakService {
         userRepresentation.setEmail(userKeycloak.email());
         userRepresentation.setFirstName(userKeycloak.name());
         userRepresentation.setLastName(userKeycloak.lastName());
-        userRepresentation.setEmailVerified(true);
+        userRepresentation.setEmailVerified(false);
 
         CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
         credentialRepresentation.setValue(userKeycloak.password());
@@ -73,11 +76,26 @@ public class KeycloakService {
             throw new BadRequestException("(!) something happened, try again later");
         }
 
+        List<UserRepresentation> emailsFound = getRealm().users().searchByEmail(userKeycloak.email(), true);
+        if(emailsFound.isEmpty()) {
+            System.out.println("No hay emails registrados");
+        }
+
+        List<UserRepresentation> userRepresentations = getRealm().users().searchByUsername(userKeycloak.userName(), true);
+        if(!CollectionUtils.isEmpty(userRepresentations)) {
+            UserRepresentation userRepresentation1 = userRepresentations.stream().filter(userRep -> Objects.equals(false, userRep.isEmailVerified())).findFirst().orElse(null);
+            assert userRepresentation1 != null;
+            emailVerification(userRepresentation1.getId());
+            System.out.println("------ EMAIL ENVIADO A USUARIO " + userRepresentation1.getId());
+        }
+
+       // userRepresentation.setId(CreatedResponseUtil.getCreatedId(response));
+
         return userKeycloak;
     }
 
 
-    public String login(Login login) throws Exception {
+    public AccessKeycloak login(Login login) throws Exception {
         try{
 
             AccessKeycloak tokenAccess = null;
@@ -95,12 +113,22 @@ public class KeycloakService {
                     .scope(tokenManager.getAccessToken().getScope())
                     .build();
 
-            return tokenAccess.getAccessToken();
+            return tokenAccess;
 
         }  catch (Exception e) {
             throw new AuthenticationException("Invalid Credentials");
         }
     }
+
+    public void logout(String userId) {
+        getRealm().users().get(userId).logout();
+    }
+
+    public void emailVerification(String userId) {
+        UsersResource usersResource = getRealm().users();
+        usersResource.get(userId).sendVerifyEmail();
+    }
+
 /*
     private UsersResource getUsersResource() {
         RealmResource realmUsed = keycloak.realm(realm);

@@ -1,11 +1,14 @@
 package com.dh.userService.userservice.controller;
 
 
+import com.dh.userService.userservice.entities.AccessKeycloak;
 import com.dh.userService.userservice.entities.Login;
 import com.dh.userService.userservice.entities.User;
 import com.dh.userService.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +31,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Login loginData) throws Exception{
-        String credentials = userService.login(loginData);
+        AccessKeycloak credentials = userService.login(loginData);
 
         if (credentials != null) {
             return ResponseEntity.ok(credentials);
@@ -39,6 +42,33 @@ public class UserController {
         }
     }
 
+    /*
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println(userId);
+
+        if (userId.isEmpty()) {
+            ResponseEntity.notFound().build();
+        }
+
+        userService.logout(userId);
+
+        return ResponseEntity.ok("succesfully logged out");
+    }
+*/
+
+    @PostMapping("/logout")
+    public void logout() {
+        Authentication userId = SecurityContextHolder.getContext().getAuthentication();
+
+        System.out.println(userId);
+
+        if(userId == null) {
+            System.out.println("aca no hay nada");
+        }
+
+}
 
 
 /*

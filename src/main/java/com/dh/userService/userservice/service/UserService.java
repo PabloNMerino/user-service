@@ -35,15 +35,17 @@ public class UserService {
         return user;
     }
 
-    public String login(Login loginData) throws Exception {
+    public AccessKeycloak login(Login loginData) throws Exception {
         Optional<User> userOptional = userRepository.findByEmail(loginData.getEmail());
-        if(userOptional.isPresent()) {
-            return keycloakService.login(loginData);
-        } else {
+        if(userOptional.isEmpty()) {
             throw new Exception("user not found!");
         }
+        return keycloakService.login(loginData);
     }
 
+    public void logout(String userId) {
+        keycloakService.logout(userId);
+    }
 
     public Optional<User> findById(Long id) {
         System.out.println("- - - Searching user by ID -> " + id);
