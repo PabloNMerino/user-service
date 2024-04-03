@@ -70,6 +70,11 @@ public class UserController {
 
 }
 
+    @PutMapping("/{username}/forgot-password")
+    public void forgotPassword(@PathVariable String username) {
+        userService.forgotPassword(username);
+    }
+
 
 /*
     @GetMapping("/{id}")

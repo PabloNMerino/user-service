@@ -76,4 +76,8 @@ public class UserService {
         return user;
     }
 
+    public void forgotPassword(String username)  {
+        keycloakService.forgotPassword(username);
+    }
+
 }

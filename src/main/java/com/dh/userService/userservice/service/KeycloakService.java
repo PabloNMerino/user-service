@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.admin.client.token.TokenManager;
 import org.keycloak.jose.jwk.JWK;
@@ -39,6 +40,8 @@ public class KeycloakService {
     private String clientSecret;
     @Value("${keycloak.tokenEndpoint}")
     private String tokenEndpoint;
+
+    private static final String UPDATE_PASSWORD = "UPDATE_PASSWORD";
 
     public RealmResource getRealm() {
         return keycloakClientConfig.getInstance().realm(realm);
@@ -127,6 +130,21 @@ public class KeycloakService {
     public void emailVerification(String userId) {
         UsersResource usersResource = getRealm().users();
         usersResource.get(userId).sendVerifyEmail();
+    }
+
+    public void forgotPassword (String username) {
+        UsersResource usersResource = getRealm().users();
+        List<UserRepresentation> representationList = usersResource.searchByUsername(username, true);
+        UserRepresentation userRepresentation = representationList.stream().findFirst().orElse(null);
+        if(userRepresentation!=null) {
+            UserResource userResource = usersResource.get(userRepresentation.getId());
+            List<String> actions = new ArrayList<>();
+            actions.add(UPDATE_PASSWORD);
+
+            userResource.executeActionsEmail(actions);
+            return;
+        }
+       throw new RuntimeException("User not found!!!");
     }
 
 /*
